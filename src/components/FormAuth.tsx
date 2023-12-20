@@ -1,22 +1,29 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Link } from "react-router-dom";
-import { login } from "../services/firebase/firebase";
-import { Auth } from "../typings/Auth.interfases";
+import { Link, useNavigate } from "react-router-dom";
+import { login, register } from "../services/firebase/firebase";
+import {
+  AuthErrorInterface,
+  AuthInterface,
+  FormAuthPropsInterface,
+} from "../typings/Auth.interfaces";
 
-interface FormAuthProps {
-  isRegister: boolean;
-}
-
-const FormAuth: React.FC<FormAuthProps> = ({ isRegister }) => {
+const FormAuth: React.FC<FormAuthPropsInterface> = ({ isRegister }) => {
+  const navigate = useNavigate();
+  const [errorsFirebase, setErrorsFirebase] =
+    React.useState<AuthErrorInterface | null>(null);
   const formik = useFormik({
     initialValues: {
-      email: "",
-      password: "",
-      repPassword: "",
+      email: "carloscumaco5@gmai.com",
+      password: "123123",
+      repPassword: "123123",
+      displayedName: "Borking",
     },
     validationSchema: Yup.object({
+      displayedName: isRegister
+        ? Yup.string().required("Required")
+        : Yup.string(),
       email: Yup.string().email("Invalid email address").required("Required"),
       password: Yup.string().required("Required"),
       repPassword: isRegister
@@ -25,8 +32,22 @@ const FormAuth: React.FC<FormAuthProps> = ({ isRegister }) => {
             .required("Required")
         : Yup.string(),
     }),
-    onSubmit: (values: Auth) => {
-      login(values.email, values.password);
+    onSubmit: async (values: AuthInterface) => {
+      if (isRegister) {
+        const response = (await register(values)) as AuthErrorInterface;
+        if (response.error) {
+          setErrorsFirebase(response);
+          return;
+        }
+        navigate("/");
+      } else {
+        const response = (await login(values)) as AuthErrorInterface;
+        if (response.error) {
+          setErrorsFirebase(response);
+          return;
+        }
+        navigate("/");
+      }
     },
   });
 
@@ -38,6 +59,33 @@ const FormAuth: React.FC<FormAuthProps> = ({ isRegister }) => {
         className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
         onSubmit={handleSubmit}
       >
+        {isRegister && (
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="displayedName"
+            >
+              Nickname
+            </label>
+            <input
+              className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
+                touched.displayedName && errors.displayedName
+                  ? "border-red-500"
+                  : ""
+              }`}
+              id="displayedName"
+              type="text"
+              placeholder="displayedName"
+              value={values.displayedName}
+              onChange={handleChange}
+            />
+            {touched.displayedName && errors.displayedName && (
+              <p className="text-red-500 text-xs italic">
+                {errors.displayedName}
+              </p>
+            )}
+          </div>
+        )}
         <div className="mb-4">
           <label
             className="block text-gray-700 text-sm font-bold mb-2"
@@ -106,6 +154,11 @@ const FormAuth: React.FC<FormAuthProps> = ({ isRegister }) => {
               </p>
             )}
           </div>
+        )}
+        {errorsFirebase && (
+          <p className="text-red-500 text-xs italic mb-3">
+            {errorsFirebase.error.message}
+          </p>
         )}
         <div className="flex items-center justify-between">
           <button
