@@ -2,7 +2,7 @@ import React from 'react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { Link, useNavigate } from 'react-router-dom'
-import { login, register } from '../services/firebase/firebase'
+import { useUser } from '../context/UserProvider'
 import {
   AuthErrorInterface,
   AuthInterface,
@@ -10,6 +10,7 @@ import {
 } from '../typings/Auth.interfaces'
 
 const FormAuth: React.FC<FormAuthPropsInterface> = ({ isRegister }) => {
+  const { login, register } = useUser()
   const navigate = useNavigate()
   const [errorsFirebase, setErrorsFirebase] =
     React.useState<AuthErrorInterface | null>(null)
@@ -39,14 +40,12 @@ const FormAuth: React.FC<FormAuthPropsInterface> = ({ isRegister }) => {
           setErrorsFirebase(response)
           return
         }
-        navigate('/')
       } else {
         const response = (await login(values)) as AuthErrorInterface
         if (response.error) {
           setErrorsFirebase(response)
           return
         }
-        navigate('/')
       }
     },
   })
@@ -59,6 +58,9 @@ const FormAuth: React.FC<FormAuthPropsInterface> = ({ isRegister }) => {
         className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4'
         onSubmit={handleSubmit}
       >
+        <h1 className='block text-gray-700 text-2xl mb-3 uppercase font-bold text-center'>
+          {isRegister ? 'Register' : 'Login'}
+        </h1>
         {isRegister && (
           <div className='mb-4'>
             <label

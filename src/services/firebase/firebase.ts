@@ -20,12 +20,10 @@ export const register = async (userData: AuthInterface) => {
     )
     const user = userCredential.user
     updateProfile(user, { displayName: displayedName })
-    console.log('User registered:', user)
     return user
   } catch (error: any) {
     const errorCode = error.code
     const errorMessage = error.message
-    console.error('Error during registration:', errorCode)
     return {
       error: {
         code: errorCode,
@@ -43,14 +41,11 @@ export const login = async (userData: AuthInterface) => {
       email,
       password,
     )
-    // El usuario se registró correctamente
     const user = userCredential.user
-    console.log('User logged in:', user)
     return user
   } catch (error: any) {
     const errorCode = error.code
     const errorMessage = error.message
-    console.error('Error during login:', errorCode, errorMessage)
     return {
       error: {
         code: errorCode,
@@ -63,10 +58,8 @@ export const login = async (userData: AuthInterface) => {
 export const logout = async () => {
   try {
     await signOut(auth)
-    console.log('User logged out')
     return true
   } catch (error: any) {
-    console.error('Error during logout:', error)
     return false
   }
 }

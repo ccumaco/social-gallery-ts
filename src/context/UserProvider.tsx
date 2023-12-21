@@ -6,18 +6,26 @@ import {
   Auth,
   signOut,
   updateProfile,
+  onAuthStateChanged,
 } from 'firebase/auth'
-import React, { createContext, useState, useContext, ReactNode } from 'react'
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from 'react'
 import app from '../firebaseConfig'
-import { AuthInterface } from '../typings/Auth.interfaces'
 import { UserInterface } from '../typings/User.interface'
+import { useNavigate } from 'react-router-dom'
+
 const auth: Auth = getAuth(app)
 
 interface UserContextProps {
   user: UserInterface | null
-  login: (userData: UserInterface) => UserInterface | any
-  logout: () => void
-  register: (userData: UserInterface) => UserInterface | any
+  login: (userData: any) => Promise<UserInterface | any>
+  logout: () => Promise<boolean>
+  register: (userData: any) => Promise<UserInterface | any>
 }
 
 const UserContext = createContext<UserContextProps | undefined>(undefined)
@@ -27,7 +35,9 @@ interface UserProviderProps {
 }
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+  const navigate = useNavigate()
   const [user, setUser] = useState<UserInterface | null>(null)
+
   const register = async (userData: any) => {
     try {
       const { displayedName, email, password } = userData
@@ -37,8 +47,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         password,
       )
       const user = userCredential.user
-      updateProfile(user, { displayName: displayedName })
-      console.log('UserInterface registered:', user)
+      await updateProfile(user, { displayName: displayedName })
+      console.log('User registered:', user)
+      navigate('/')
       return user
     } catch (error: any) {
       const errorCode = error.code
@@ -61,9 +72,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         email,
         password,
       )
-      // El usuario se registró correctamente
       const user = userCredential.user
-      console.log('UserInterface logged in:', user)
+      console.log('User logged in:', user)
+      navigate('/')
       return user
     } catch (error: any) {
       const errorCode = error.code
@@ -81,13 +92,30 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       await signOut(auth)
-      console.log('UserInterface logged out')
+      console.log('User logged out')
+      navigate('/login')
+
       return true
     } catch (error: any) {
       console.error('Error during logout:', error)
       return false
     }
   }
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      const user = authUser
+        ? {
+            uid: authUser.uid,
+            email: authUser.email || '',
+            displayName: authUser.displayName || '',
+          }
+        : null
+      setUser(user)
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   return (
     <UserContext.Provider value={{ user, register, login, logout }}>
@@ -99,7 +127,11 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 export const useUser = (): UserContextProps => {
   const context = useContext(UserContext)
   if (!context) {
-    throw new Error('useUser debe ser utilizado dentro de un UserProvider')
+    console.log(context, 'contextcontext')
+
+    throw new Error(
+      'useUser debe ser utilizado dentro de un UserProvider' + context,
+    )
   }
   return context
 }
