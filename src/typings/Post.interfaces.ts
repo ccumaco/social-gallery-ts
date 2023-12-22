@@ -1,15 +1,17 @@
-export interface Comment {
+export interface CommentInterface {
   id: string
   content: string
-  userId: string
   timestamp: string
+  userId: string
 }
 
-export interface Post {
+export interface PostInterface {
   id: string
-  content: string
+  title?: string
+  imageUrls?: string[]
+  comments?: CommentInterface[]
+  likes?: string[]
   userId: string
   timestamp: string
-  comments: Comment[]
-  likes: string[]
+  content?: string
 }

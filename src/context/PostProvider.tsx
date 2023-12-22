@@ -7,13 +7,13 @@ import React, {
   useEffect,
 } from 'react'
 import { getFirestore, collection, addDoc, onSnapshot } from 'firebase/firestore'
-import { Post } from '../typings/Post.interfaces'
+import { PostInterface } from '../typings/Post.interfaces'
 
 const db = getFirestore()
 
 interface PostContextProps {
-  posts: Post[]
-  addPost: (newPost: Post) => void
+  posts: PostInterface[]
+  addPost: (newPost: PostInterface) => void
 }
 
 const PostContext = createContext<PostContextProps | undefined>(undefined)
@@ -23,9 +23,9 @@ interface PostProviderProps {
 }
 
 export const PostProvider: React.FC<PostProviderProps> = ({ children }) => {
-  const [posts, setPosts] = useState<Post[]>([])
+  const [posts, setPosts] = useState<PostInterface[]>([])
 
-  const addPost = async (newPost: Post) => {
+  const addPost = async (newPost: PostInterface) => {
     try {
       const docRef = await addDoc(collection(db, 'Posts'), newPost)
       setPosts((prevPosts) => [...prevPosts, { ...newPost, id: docRef.id }])
@@ -40,7 +40,7 @@ export const PostProvider: React.FC<PostProviderProps> = ({ children }) => {
         const postsData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        })) as Post[]
+        })) as PostInterface[]
         setPosts(postsData)
       } catch (error) {
         console.error('Error mapping snapshot data:', error)

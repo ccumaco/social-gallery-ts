@@ -5,6 +5,7 @@ import App from './App'
 import reportWebVitals from './reportWebVitals'
 import { UserProvider } from './context/UserProvider'
 import { PostProvider } from './context/PostProvider'
+import { CommentProvider } from './context/CommentProvider'
 import { BrowserRouter } from 'react-router-dom'
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
@@ -13,7 +14,9 @@ root.render(
     <BrowserRouter>
       <UserProvider>
         <PostProvider>
-          <App />
+          <CommentProvider>
+            <App />
+          </CommentProvider>
         </PostProvider>
       </UserProvider>
     </BrowserRouter>
