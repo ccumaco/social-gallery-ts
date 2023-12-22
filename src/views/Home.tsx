@@ -1,6 +1,7 @@
 import React from 'react'
 import Carousel from '../components/Carousel'
 import Gallery from '../components/Gallery'
+import UploadFiles from '../components/UploadFiles'
 
 const Home = () => {
   const images = [
@@ -18,7 +19,8 @@ const Home = () => {
     'https://flowbite.s3.amazonaws.com/docs/gallery/square/image-11.jpg',
   ]
   return (
-    <div>
+    <div className='px-4 mx-auto max-w-screen-xl'>
+      <UploadFiles />
       <Gallery images={images} />
     </div>
   )
