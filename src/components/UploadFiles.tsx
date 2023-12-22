@@ -1,27 +1,55 @@
 import { useRef, useState } from 'react'
 import Webcam from 'react-webcam'
-import { ReactComponent as CamaraIcon } from './../icons/camara-icon.svg'
+import { ReactComponent as CameraIcon } from './../icons/camara-icon.svg'
+import { usePost } from '../context/PostProvider'
+import { useUser } from '../context/UserProvider'
+import { uid } from 'uid'
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
 
 const UploadFiles = () => {
   const [comment, setComment] = useState('')
-  const [images, setImages] = useState<string[]>([])
+  const [images, setImages] = useState<object[]>([{}])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [showCamera, setShowCamera] = useState(false)
-
+  const [blobImages, setBlobImages] = useState<Blob[]>([])
+  const { addPost } = usePost()
+  const { user } = useUser()
   const webcamRef = useRef(null) as any
+  const uidStatic = uid()
+  const uploadImage = async (blob: Blob): Promise<string> => {
+    const storage = getStorage()
+    const timestamp = new Date().getTime()
+    const extension = blob.type.split('/')?.pop() || 'jpg'
+
+    const storageRef = ref(
+      storage,
+      `${user?.uid}/${uidStatic}/image-${uid()}.${extension}`,
+    )
+    await uploadBytes(storageRef, blob)
+    const downloadURL = await getDownloadURL(storageRef)
+    return downloadURL
+  }
 
   const handleImageUpload = (e: any) => {
     if (e.target.files) {
-      const selectedImages: string[] = []
+      const selectedImages: Blob[] = [] // Cambiar de object a Blob
       const selectedImagePreviews: string[] = []
 
       for (let i = 0; i < e.target.files.length; i++) {
-        const imageObject = URL.createObjectURL(e.target.files[i])
-        selectedImages.push(imageObject)
-        selectedImagePreviews.push(URL.createObjectURL(e.target.files[i]))
+        const item = e.target.files[i]
+
+        const blob = new Blob([item], {
+          type: item.type,
+        })
+        setBlobImages((prevBlobImages) => [...prevBlobImages, blob])
+
+        const imageObject = URL.createObjectURL(blob)
+        selectedImages.push(blob)
+        selectedImagePreviews.push(imageObject)
       }
 
       setImages((prevImages) => [...prevImages, ...selectedImages])
+
       setImagePreviews((prevPreviews) => [
         ...prevPreviews,
         ...selectedImagePreviews,
@@ -29,13 +57,29 @@ const UploadFiles = () => {
     }
   }
 
-  const handlePostComment = (e: any) => {
+  const handlePostComment = async (e: any) => {
     e.preventDefault()
-    console.log('Comment:', comment)
-    console.log('Images:', images)
+
+    const timestamp = new Date().getTime()
+    console.log(images, 'images')
+
+    const imageUrls = await Promise.all(blobImages.map(uploadImage))
+
+    const newPost = {
+      id: Math.random().toString(36).substr(2, 18),
+      content: comment,
+      userId: String(user?.uid),
+      timestamp: String(Date.now()),
+      comments: [],
+      likes: [],
+      imageUrls: imageUrls,
+    }
+
+    addPost(newPost)
     setComment('')
     setImages([])
     setImagePreviews([])
+    setBlobImages([])
   }
 
   const handleRemoveImage = (indexToRemove: number) => {
@@ -52,6 +96,7 @@ const UploadFiles = () => {
     }
     if (webcamRef.current) {
       const photo = webcamRef.current.getScreenshot?.()
+      console.log(photo, 'photo')
 
       if (photo) {
         setImages((prevImages) => [...prevImages, photo])
@@ -62,9 +107,9 @@ const UploadFiles = () => {
   }
 
   return (
-    <div className='mb-4'>
+    <div>
       <form onSubmit={handlePostComment}>
-        <div className='w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600'>
+        <div className='w-full mb-2 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600'>
           <div className='px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800'>
             <label
               htmlFor='comment'
@@ -124,7 +169,7 @@ const UploadFiles = () => {
                 onClick={() => handleCapturePhoto(true)}
                 className='inline-flex justify-center items-center p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600'
               >
-                <CamaraIcon className='w-4 h-4' />
+                <CameraIcon className='w-4 h-4' />
 
                 <span className='sr-only'>Capture photo</span>
               </button>
@@ -133,7 +178,7 @@ const UploadFiles = () => {
         </div>
       </form>
       {showCamera && (
-        <div className='relative'>
+        <div className='relative rounded-md overflow-hidden mb-2 w-full'>
           <Webcam
             audio={false}
             ref={webcamRef}
@@ -162,51 +207,42 @@ const UploadFiles = () => {
           </button>
         </div>
       )}
-      <div className='flex space-x-2 mb-4'>
-        {imagePreviews.map((preview, index) => (
-          <div
-            key={index}
-            className='relative'
-          >
-            <img
-              src={preview}
-              alt={`Preview ${index}`}
-              className='w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600'
-            />
-            <button
-              type='button'
-              onClick={() => handleRemoveImage(index)}
-              className='absolute top-0 right-0 p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+      {imagePreviews.length > 0 && (
+        <div className='flex space-x-2 mb-2'>
+          {imagePreviews.map((preview, index) => (
+            <div
+              key={index}
+              className='relative'
             >
-              <svg
-                className='w-4 h-4'
-                aria-hidden='true'
-                xmlns='http://www.w3.org/2000/svg'
-                fill='currentColor'
-                viewBox='0 0 20 20'
+              <img
+                src={preview}
+                alt={`Preview ${index}`}
+                className='w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600'
+              />
+              <button
+                type='button'
+                onClick={() => handleRemoveImage(index)}
+                className='absolute top-0 right-0 p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
               >
-                <path
-                  fillRule='evenodd'
-                  d='M2 5a2 2 0 012-2h12a2 2 0 012 2V6a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm2 0v12h12V5H4zm2 2h8v8H6V7zm2 2v4h4V9H8z'
-                  clipRule='evenodd'
-                />
-              </svg>
-              <span className='sr-only'>Remove image</span>
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <p className='ms-auto text-xs text-gray-500 dark:text-gray-400'>
-        Remember, contributions to this topic should follow our{' '}
-        <a
-          href='#'
-          className='text-blue-600 dark:text-blue-500 hover:underline'
-        >
-          Community Guidelines
-        </a>
-        .
-      </p>
+                <svg
+                  className='w-4 h-4'
+                  aria-hidden='true'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='currentColor'
+                  viewBox='0 0 20 20'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M2 5a2 2 0 012-2h12a2 2 0 012 2V6a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm2 0v12h12V5H4zm2 2h8v8H6V7zm2 2v4h4V9H8z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+                <span className='sr-only'>Remove image</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

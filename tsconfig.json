@@ -16,5 +16,6 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
+  "types": ["firebase"],
   "include": ["src", "src/components/Carousel.tsx"]
 }
