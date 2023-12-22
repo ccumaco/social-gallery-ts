@@ -7,7 +7,6 @@ const UploadFiles = () => {
   const [images, setImages] = useState<string[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [showCamera, setShowCamera] = useState(false)
-  const [errorCamera, setErrorCamera] = useState(false)
 
   const webcamRef = useRef(null) as any
 
@@ -47,31 +46,10 @@ const UploadFiles = () => {
       prevPreviews.filter((_, index) => index !== indexToRemove),
     )
   }
-  const handleCapturePhoto = async () => {
-    try {
-      // Solicitar permisos para acceder a la cámara
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-
-      setShowCamera(true)
-
-      if (webcamRef.current) {
-        webcamRef.current.video.srcObject = stream
-        const photo = webcamRef.current.getScreenshot?.()
-
-        if (photo) {
-          setImages((prevImages) => [...prevImages, photo])
-          setImagePreviews((prevPreviews) => [...prevPreviews, photo])
-          setShowCamera(false)
-          stream.getTracks().forEach((track) => track.stop())
-        }
-      }
-      setErrorCamera(false)
-    } catch (error) {
-      console.error('Error al acceder a la cámara:', error)
-      setErrorCamera(true)
+  const handleCapturePhoto = (close: boolean) => {
+    if (close) {
+      setShowCamera(close)
     }
-  }
-  const handleCaptureComplete = () => {
     if (webcamRef.current) {
       const photo = webcamRef.current.getScreenshot?.()
 
@@ -143,7 +121,7 @@ const UploadFiles = () => {
               </label>
               <button
                 type='button'
-                onClick={handleCapturePhoto}
+                onClick={() => handleCapturePhoto(true)}
                 className='inline-flex justify-center items-center p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600'
               >
                 <CamaraIcon className='w-4 h-4' />
@@ -161,11 +139,11 @@ const UploadFiles = () => {
             ref={webcamRef}
             screenshotFormat='image/jpeg'
             className='w-full h-full'
-            onUserMedia={() => handleCaptureComplete()}
+            onUserMedia={() => handleCapturePhoto(false)}
           />
           <button
             className='absolute bottom-3 left-0 right-0'
-            onClick={handleCapturePhoto}
+            onClick={() => handleCapturePhoto(false)}
           >
             <svg
               className='w-12 h-12 mx-auto'
@@ -183,11 +161,6 @@ const UploadFiles = () => {
             </svg>
           </button>
         </div>
-      )}
-      {errorCamera && (
-        <p className='text-sm text-red-500 dark:text-red-400'>
-          Error al acceder a la cámara
-        </p>
       )}
       <div className='flex space-x-2 mb-4'>
         {imagePreviews.map((preview, index) => (
