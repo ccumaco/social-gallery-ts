@@ -1,17 +1,16 @@
 import React, { useState } from 'react'
 
-const Carousel = () => {
-  const [activeIndex, setActiveIndex] = useState(1) // Starting index for active item
-  const images = ['/descarga.jpeg', '/logo512.png']
+const Carousel = ({ imagesCarousel }: { imagesCarousel: string[] }) => {
+  const [activeIndex, setActiveIndex] = useState(0) // Cambiado a 0 como índice inicial
   const handlePrev = () => {
     setActiveIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1,
+      prevIndex === 0 ? imagesCarousel.length - 1 : prevIndex - 1,
     )
   }
 
   const handleNext = () => {
     setActiveIndex((prevIndex) =>
-      prevIndex === images.length - 1 ? 0 : prevIndex + 1,
+      prevIndex === imagesCarousel.length - 1 ? 0 : prevIndex + 1,
     )
   }
 
@@ -24,18 +23,18 @@ const Carousel = () => {
       {/* Carousel wrapper */}
       <div className='relative h-56 overflow-hidden rounded-lg md:h-96'>
         {/* Carousel items */}
-        {images.map((image, index) => (
+        {imagesCarousel.map((image, index) => (
           <div
             key={image}
             className={`${
               index === activeIndex ? 'block' : 'hidden'
-            } duration-700 ease-in-out`}
+            } duration-700 ease-in-out h-full`}
             data-carousel-item={index === activeIndex ? 'active' : undefined}
           >
             <img
               src={image}
-              className='absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2'
-              alt={`Slide ${image}`}
+              className='object-cover absolute block w-full h-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2'
+              alt={`Slide ${index}`}
             />
           </div>
         ))}
@@ -57,14 +56,14 @@ const Carousel = () => {
           >
             <path
               stroke='currentColor'
-              stroke-linecap='round'
-              stroke-linejoin='round'
-              stroke-width='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth='2'
               d='M5 1 1 5l4 4'
             />
           </svg>
           <span className='sr-only'>Previous</span>
-        </span>
+        </span>{' '}
       </button>
       <button
         onClick={handleNext}
@@ -82,9 +81,9 @@ const Carousel = () => {
           >
             <path
               stroke='currentColor'
-              stroke-linecap='round'
-              stroke-linejoin='round'
-              stroke-width='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth='2'
               d='m1 9 4-4-4-4'
             />
           </svg>
