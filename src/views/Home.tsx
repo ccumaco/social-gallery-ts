@@ -11,6 +11,7 @@ import { usePost } from '../context/PostProvider'
 import { PostInterface, CommentInterface } from '../typings/Post.interfaces'
 import Gallery from '../components/Gallery'
 import UploadFiles from '../components/UploadFiles'
+import DarkIcon from './../icons/dark-icon.svg'
 
 const Home = () => {
   const { posts } = usePost()
@@ -127,6 +128,7 @@ const Home = () => {
       <UploadFiles />
       <div className='my-10'></div>
       <Gallery data={data} />
+      {/* fixed button */}
     </div>
   )
 }

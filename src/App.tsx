@@ -3,22 +3,32 @@ import { Link, Routes, Route } from 'react-router-dom'
 import Login from './views/Login'
 import Home from './views/Home'
 import { useUser } from './context/UserProvider'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import ProtectedRoute from './views/ProtectedRoutes'
 import LoginProtectedRoute from './views/LoginProtectedRoutes'
+import DarkIcon from './icons/dark-icon.svg'
 
 function App() {
   const { user, logout } = useUser()
-  useEffect(() => {
-    if (
+  const [darkMode, setDarkMode] = useState(false)
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+    const isDarkMode =
       localStorage.theme === 'dark' ||
       (!('theme' in localStorage) &&
         window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      document.documentElement.classList.add('dark')
+    console.log(isDarkMode, 'isDarkMode')
+
+    if (!isDarkMode) {
+      document.querySelector('html')?.classList.add('dark')
+      localStorage.theme = 'dark'
     } else {
-      document.documentElement.classList.remove('dark')
+      document.querySelector('html')?.classList.remove('dark')
+      localStorage.theme = 'light'
     }
+  }
+  useEffect(() => {
+    toggleDarkMode()
   }, [])
   return (
     <div className='App dark:bg-gray-800 min-h-screen dark:text-white'>
@@ -97,6 +107,17 @@ function App() {
           }
         />
       </Routes>
+      <button
+        type='button'
+        className='fixed bottom-0 right-0 z-50 flex items-center justify-center w-12 h-12 mr-4 mb-4 rounded-full dark:bg-white bg-gray-800 shadow-md focus:outline-none'
+        aria-label='Dark mode'
+        onClick={() => toggleDarkMode()}
+      >
+        <img
+          src={DarkIcon}
+          alt=''
+        />
+      </button>
     </div>
   )
 }

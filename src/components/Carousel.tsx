@@ -29,12 +29,12 @@ const Carousel = ({ imagesCarousel }: { imagesCarousel: string[] }) => {
               key={image}
               className={`${
                 index === activeIndex ? 'block' : 'hidden'
-              } duration-700 ease-in-out h-full`}
+              } duration-700 ease-in-out h-full dark:bg-gray-900 transition-all bg-gray-100`}
               data-carousel-item={index === activeIndex ? 'active' : undefined}
             >
               <img
                 src={image}
-                className='object-cover absolute block w-full h-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2'
+                className='object-contain absolute block w-full h-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2'
                 alt={`Slide ${index}`}
               />
             </div>

@@ -7,7 +7,7 @@ import { UserProvider } from './context/UserProvider'
 import { PostProvider } from './context/PostProvider'
 import { CommentProvider } from './context/CommentProvider'
 import { BrowserRouter } from 'react-router-dom'
-
+import DarkIcon from './icons/dark-icon.svg'
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
   <React.StrictMode>
