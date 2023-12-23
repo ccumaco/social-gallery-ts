@@ -26,6 +26,7 @@ const db = getFirestore()
 interface CommentContextProps {
   comments: CommentInterface[]
   addComment: (newComment: CommentInterface, postId: string) => void
+  addLike: (postId: string, userId: string) => void
 }
 
 const CommentContext = createContext<CommentContextProps | undefined>(undefined)
@@ -38,6 +39,36 @@ export const CommentProvider: React.FC<CommentProviderProps> = ({
   children,
 }) => {
   const [comments, setComments] = useState<CommentInterface[]>([])
+
+  const addLike = async (postId: string, userId: string) => {
+    try {
+      const postQuery = query(collection(db, 'Posts'), where('id', '==', postId))
+      const postQuerySnapshot = await getDocs(postQuery)
+
+      if (postQuerySnapshot.docs.length > 0) {
+        const postDoc = postQuerySnapshot.docs[0]
+        const existingLikes = postDoc.data().likes || []
+        const userLikedIndex = existingLikes.findIndex(
+          (like: any) => like.userId === userId,
+        )
+
+        if (userLikedIndex === -1) {
+          await updateDoc(postDoc.ref, {
+            likes: [...existingLikes, { userId }],
+          })
+        } else {
+          existingLikes.splice(userLikedIndex, 1)
+          await updateDoc(postDoc.ref, {
+            likes: existingLikes,
+          })
+        }
+      } else {
+        console.error('Post not found')
+      }
+    } catch (error) {
+      console.error('Error adding like:', error)
+    }
+  }
 
   const addComment = async (newComment: CommentInterface, postId: string) => {
     try {
@@ -82,7 +113,7 @@ export const CommentProvider: React.FC<CommentProviderProps> = ({
   }, [db, setComments])
 
   return (
-    <CommentContext.Provider value={{ comments, addComment }}>
+    <CommentContext.Provider value={{ comments, addComment, addLike }}>
       {children}
     </CommentContext.Provider>
   )

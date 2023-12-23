@@ -7,6 +7,8 @@ import {
   signOut,
   updateProfile,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth'
 import React, {
   createContext,
@@ -18,7 +20,14 @@ import React, {
 import app from '../firebaseConfig'
 import { UserInterface } from '../typings/User.interface'
 import { useNavigate } from 'react-router-dom'
-import { addDoc, collection, getFirestore } from 'firebase/firestore'
+import {
+  addDoc,
+  collection,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from 'firebase/firestore'
 
 const auth: Auth = getAuth(app)
 
@@ -27,6 +36,8 @@ interface UserContextProps {
   login: (userData: any) => Promise<UserInterface | any>
   logout: () => Promise<boolean>
   register: (userData: any) => Promise<UserInterface | any>
+  registerAndSignIn: (userData: any) => Promise<UserInterface | any>
+  signInWithGoogle: (userData: any) => Promise<UserInterface | any>
 }
 
 const UserContext = createContext<UserContextProps | undefined>(undefined)
@@ -38,6 +49,77 @@ interface UserProviderProps {
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const navigate = useNavigate()
   const [user, setUser] = useState<UserInterface | null>(null)
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider()
+      const result = await signInWithPopup(auth, provider)
+      const user = result.user
+      const db = getFirestore()
+      const usersCollection = collection(db, 'Users')
+      const userQuerySnapshot = await getDocs(
+        query(usersCollection, where('uid', '==', user.uid)),
+      )
+
+      if (userQuerySnapshot.empty) {
+        await addDoc(usersCollection, {
+          uid: user.uid,
+          displayName: user.displayName,
+        })
+      }
+
+      console.log('User signed in with Google:', user)
+      navigate('/')
+      return user
+    } catch (error) {
+      console.error('Error during Google sign-in:', error)
+      return {
+        error: {
+          message: 'Error during Google sign-in',
+        },
+      }
+    }
+  }
+  const registerAndSignIn = async ({
+    displayedName,
+  }: {
+    displayedName: string
+  }) => {
+    try {
+      if (!displayedName) {
+        return {
+          error: {
+            code: '400',
+            message: 'Nickname is required',
+          },
+        }
+      }
+
+      const auth = getAuth()
+      const provider = new GoogleAuthProvider()
+      const userCredential = await signInWithPopup(auth, provider)
+      const user = userCredential.user
+
+      await updateProfile(user, { displayName: displayedName })
+
+      const db = getFirestore()
+      const usersCollection = collection(db, 'Users')
+      await addDoc(usersCollection, {
+        uid: user.uid,
+        displayedName,
+      })
+
+      console.log('User registered and signed in:', user)
+      navigate('/')
+      return user
+    } catch (error) {
+      console.error('Error during registration and sign-in:', error)
+      return {
+        error: {
+          message: 'Error during registration and sign-in',
+        },
+      }
+    }
+  }
 
   const register = async (userData: any) => {
     try {
@@ -130,7 +212,16 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, [])
 
   return (
-    <UserContext.Provider value={{ user, register, login, logout }}>
+    <UserContext.Provider
+      value={{
+        user,
+        register,
+        login,
+        logout,
+        registerAndSignIn,
+        signInWithGoogle,
+      }}
+    >
       {children}
     </UserContext.Provider>
   )

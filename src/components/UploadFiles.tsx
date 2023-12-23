@@ -89,17 +89,36 @@ const UploadFiles = () => {
       prevPreviews.filter((_, index) => index !== indexToRemove),
     )
   }
+
+  const base64toBlob = (base64Data: string) => {
+    var contentType = base64Data.split(';')[0].split(':')[1]
+    var byteCharacters = atob(base64Data.split(',')[1])
+    var byteNumbers = new Array(byteCharacters.length)
+    for (var i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    var byteArray = new Uint8Array(byteNumbers)
+
+    return new Blob([byteArray], { type: contentType })
+  }
+
   const handleCapturePhoto = (close: boolean) => {
     if (close) {
       setShowCamera(close)
     }
     if (webcamRef.current) {
       const photo = webcamRef.current.getScreenshot?.()
+      console.log(photo, 'photo')
 
+      // Verificar si photo no es null antes de procesarlo
       if (photo) {
+        const blob = base64toBlob(photo)
+        console.log(blob, 'blob')
+
         setImages((prevImages) => [...prevImages, photo])
         setImagePreviews((prevPreviews) => [...prevPreviews, photo])
         setShowCamera(false)
+        setBlobImages((prevBlobImages) => [...prevBlobImages, blob])
       }
     }
   }

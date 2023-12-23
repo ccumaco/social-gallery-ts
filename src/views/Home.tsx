@@ -125,7 +125,7 @@ const Home = () => {
   return (
     <div className='px-4 mx-auto max-w-screen-xl'>
       <UploadFiles />
-      <h2 className='text-3xl uppercase text-center mb-2 mt-0'>Photos</h2>
+      <div className='my-10'></div>
       <Gallery data={data} />
     </div>
   )
