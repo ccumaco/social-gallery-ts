@@ -14,7 +14,7 @@ const Gallery = ({ data }: { data: PostInterface[] }) => {
             <strong>Created by:</strong> {item.displayName}
           </h2>
           <h2>
-            <strong>Created by:</strong> {item.likes?.length}
+            <strong>Likes:</strong> {item.likes?.length}
           </h2>
           <p>Description: {item.content}</p>
           <Comment
