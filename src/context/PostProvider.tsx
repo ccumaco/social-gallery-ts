@@ -24,11 +24,11 @@ interface PostProviderProps {
 
 export const PostProvider: React.FC<PostProviderProps> = ({ children }) => {
   const [posts, setPosts] = useState<PostInterface[]>([])
-
+  const [globalPosts, setGlobalPosts] = useState<PostInterface[]>([])
   const addPost = async (newPost: PostInterface) => {
     try {
       const docRef = await addDoc(collection(db, 'Posts'), newPost)
-      setPosts((prevPosts) => [...prevPosts, { ...newPost, id: docRef.id }])
+      setPosts((prevPosts) => [...prevPosts, { ...newPost, id: newPost.id }])
     } catch (error) {
       console.error('Error adding post:', error)
     }

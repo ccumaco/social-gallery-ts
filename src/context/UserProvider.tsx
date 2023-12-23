@@ -18,6 +18,7 @@ import React, {
 import app from '../firebaseConfig'
 import { UserInterface } from '../typings/User.interface'
 import { useNavigate } from 'react-router-dom'
+import { addDoc, collection, getFirestore } from 'firebase/firestore'
 
 const auth: Auth = getAuth(app)
 
@@ -41,15 +42,26 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const register = async (userData: any) => {
     try {
       const { displayedName, email, password } = userData
+      const auth = getAuth()
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password,
       )
       const user = userCredential.user
+
+      const db = getFirestore()
+      const usersCollection = collection(db, 'Users')
+      await addDoc(usersCollection, {
+        uid: user.uid,
+        displayName: displayedName,
+      })
+
+      // Actualiza el perfil del usuario con el displayName
       await updateProfile(user, { displayName: displayedName })
+
       console.log('User registered:', user)
-      navigate('/')
+      navigate('/') // Ajusta según tu lógica de navegación
       return user
     } catch (error: any) {
       const errorCode = error.code

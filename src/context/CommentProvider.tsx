@@ -14,6 +14,9 @@ import {
   updateDoc,
   doc,
   getDoc,
+  query,
+  where,
+  getDocs,
 } from 'firebase/firestore'
 import { CommentInterface } from '../typings/Post.interfaces'
 import { uid } from 'uid'
@@ -41,12 +44,14 @@ export const CommentProvider: React.FC<CommentProviderProps> = ({
       const docRef = await addDoc(collection(db, 'Comments'), newComment)
 
       // Update the 'comments' field in the corresponding post
-      const postDocRef = doc(db, 'Posts', postId)
-      const postDoc = await getDoc(postDocRef)
+      const postQuery = query(collection(db, 'Posts'), where('id', '==', postId))
+      const postQuerySnapshot = await getDocs(postQuery)
 
-      if (postDoc.exists()) {
-        const existingComments = postDoc.data()?.comments || []
-        await updateDoc(postDocRef, {
+      if (postQuerySnapshot.docs.length > 0) {
+        const postDoc = postQuerySnapshot.docs[0]
+        const existingComments = postDoc.data().comments || []
+
+        await updateDoc(postDoc.ref, {
           comments: [
             ...existingComments,
             { id: docRef.id, content: newComment.content },

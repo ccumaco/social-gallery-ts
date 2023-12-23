@@ -4,9 +4,16 @@ import { CommentInterface } from '../typings/Post.interfaces'
 import { useUser } from '../context/UserProvider'
 import { uid } from 'uid'
 
-const Comment = ({ comments }: { comments: CommentInterface[] }) => {
+const Comment = ({
+  comments,
+  postId,
+}: {
+  comments: CommentInterface[]
+  postId: string
+}) => {
   const [newComment, setNewComment] = useState('')
   const { user } = useUser()
+  const { addComment } = useComment()
 
   const handleCommentSubmit = (e: any) => {
     e.preventDefault()
@@ -20,7 +27,11 @@ const Comment = ({ comments }: { comments: CommentInterface[] }) => {
       id: uid(),
       timestamp: String(new Date()),
       userId: String(user?.uid),
+      postId,
     }
+    console.log(postId, 'postId')
+
+    addComment(commentData, postId)
 
     setNewComment('')
   }

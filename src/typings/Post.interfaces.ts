@@ -3,6 +3,7 @@ export interface CommentInterface {
   content: string
   timestamp: string
   userId: string
+  postId: string
 }
 
 export interface PostInterface {
@@ -14,4 +15,5 @@ export interface PostInterface {
   userId: string
   timestamp: string
   content?: string
+  displayName?: string
 }

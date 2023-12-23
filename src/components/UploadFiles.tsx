@@ -61,7 +61,6 @@ const UploadFiles = () => {
     e.preventDefault()
 
     const timestamp = new Date().getTime()
-    console.log(images, 'images')
 
     const imageUrls = await Promise.all(blobImages.map(uploadImage))
 
@@ -96,7 +95,6 @@ const UploadFiles = () => {
     }
     if (webcamRef.current) {
       const photo = webcamRef.current.getScreenshot?.()
-      console.log(photo, 'photo')
 
       if (photo) {
         setImages((prevImages) => [...prevImages, photo])
