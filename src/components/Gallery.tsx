@@ -14,7 +14,9 @@ const Gallery = ({ data }: { data: PostInterface[] }) => {
           <h2>
             <strong>Likes:</strong> {item.likes?.length}
           </h2>
-          <p>Description: {item.content}</p>
+          <p>
+            <strong>Description:</strong> {item.content}
+          </p>
           <Comment
             comments={item.comments || []}
             postId={item.id}

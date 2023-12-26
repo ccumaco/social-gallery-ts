@@ -63,11 +63,13 @@ const Comment = ({
         {showComments ? 'Hide' : 'Show'} comments ({comments.length})
       </button>
       {showComments && (
-        <div>
-          <h2>Comments:</h2>
-          <ul>
+        <div className=''>
+          <h2>
+            <strong>Comments:</strong>
+          </h2>
+          <ul className='mb-2'>
             {comments.map((comment: CommentInterface, index) => (
-              <li key={index}>{comment.content}</li>
+              <li key={index}>- {comment.content}</li>
             ))}
           </ul>
 
