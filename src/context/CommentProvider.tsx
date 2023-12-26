@@ -25,6 +25,7 @@ const db = getFirestore()
 
 interface CommentContextProps {
   comments: CommentInterface[]
+  likes: CommentInterface[]
   addComment: (newComment: CommentInterface, postId: string) => void
   addLike: (postId: string, userId: string) => void
 }
@@ -39,6 +40,7 @@ export const CommentProvider: React.FC<CommentProviderProps> = ({
   children,
 }) => {
   const [comments, setComments] = useState<CommentInterface[]>([])
+  const [likes, setLikes] = useState<CommentInterface[]>([])
 
   const addLike = async (postId: string, userId: string) => {
     try {
@@ -62,6 +64,7 @@ export const CommentProvider: React.FC<CommentProviderProps> = ({
             likes: existingLikes,
           })
         }
+        setLikes(existingLikes)
       } else {
         console.error('Post not found')
       }
@@ -113,7 +116,7 @@ export const CommentProvider: React.FC<CommentProviderProps> = ({
   }, [db, setComments])
 
   return (
-    <CommentContext.Provider value={{ comments, addComment, addLike }}>
+    <CommentContext.Provider value={{ comments, addComment, addLike, likes }}>
       {children}
     </CommentContext.Provider>
   )

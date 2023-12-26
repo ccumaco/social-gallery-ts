@@ -8,6 +8,7 @@ import {
   query,
 } from 'firebase/firestore'
 import { usePost } from '../context/PostProvider'
+import { useComment } from '../context/CommentProvider'
 import { PostInterface, CommentInterface } from '../typings/Post.interfaces'
 import Gallery from '../components/Gallery'
 import UploadFiles from '../components/UploadFiles'
@@ -15,6 +16,7 @@ import DarkIcon from './../icons/dark-icon.svg'
 
 const Home = () => {
   const { posts } = usePost()
+  const { comments, likes } = useComment()
   const [data, setData] = useState<PostInterface[]>([])
   const db = getFirestore()
   const postsCollection = collection(db, 'Posts')
@@ -121,7 +123,7 @@ const Home = () => {
   }, [])
   useEffect(() => {
     fetchData()
-  }, [posts])
+  }, [posts, comments, likes])
 
   return (
     <div className='px-4 mx-auto max-w-screen-xl'>

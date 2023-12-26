@@ -17,7 +17,6 @@ function App() {
       localStorage.theme === 'dark' ||
       (!('theme' in localStorage) &&
         window.matchMedia('(prefers-color-scheme: dark)').matches)
-    console.log(isDarkMode, 'isDarkMode')
 
     if (!isDarkMode) {
       document.querySelector('html')?.classList.add('dark')
@@ -32,7 +31,7 @@ function App() {
   }, [])
   return (
     <div className='App dark:bg-gray-800 min-h-screen dark:text-white'>
-      <header className='sticky top-0'>
+      <header className='sticky top-0 z-50'>
         <nav className='bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800'>
           <div className='flex flex-wrap justify-between items-center mx-auto max-w-screen-xl'>
             <Link
@@ -109,7 +108,7 @@ function App() {
       </Routes>
       <button
         type='button'
-        className='fixed bottom-0 right-0 z-50 flex items-center justify-center w-12 h-12 mr-4 mb-4 rounded-full dark:bg-white bg-gray-800 shadow-md focus:outline-none'
+        className='fixed bottom-0 right-0 z-50 flex items-center justify-center w-12 h-12 mr-4 mb-4 rounded-full dark:bg-white bg-gray-500 shadow-md focus:outline-none'
         aria-label='Dark mode'
         onClick={() => toggleDarkMode()}
       >

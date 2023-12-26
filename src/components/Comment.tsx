@@ -37,7 +37,7 @@ const Comment = ({
   }
 
   return (
-    <div>
+    <div className='m5'>
       {/* like button */}
       <button
         type='button'
@@ -57,7 +57,7 @@ const Comment = ({
       </button>
 
       <button
-        className='text-blue-600 hover:underline'
+        className='text-blue-600 hover:underline ml-2 my-2'
         onClick={() => setShowComments(!showComments)}
       >
         {showComments ? 'Hide' : 'Show'} comments ({comments.length})
